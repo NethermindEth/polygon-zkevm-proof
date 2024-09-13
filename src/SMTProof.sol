@@ -3,7 +3,9 @@ pragma solidity ^0.8.25;
 
 import {PoseidonT3} from "lib/poseidon-solidity/contracts/PoseidonT3.sol";
 import {PoseidonT4} from "lib/poseidon-solidity/contracts/PoseidonT4.sol";
-import {Poseidon} from "lib/Solidity-goldilocks-poseidon/contract/Poseidon.sol";
+import {PoseidonHash} from "./test.sol";
+// import {Poseidon} from "lib/Solidity-goldilocks-poseidon/contract/Poseidon.sol";
+
 import {console} from "lib/forge-std/src/console.sol";
 
 library SMTProof {
@@ -35,17 +37,40 @@ library SMTProof {
             uint256 leftChildNode = uint256(leftChild);
             uint256 rightChildNode = uint256(rightChild);
 
-            uint256[] memory input = new uint256[](3);
-            input[0] = leftChildNode;
-            input[1] = rightChildNode;
-            input[2] = convertCapacityToUint256(capacity);
 
-            Poseidon poseidon = new Poseidon();
+            uint256[] memory input = new uint256[](12);
+            // leftchild splitted into 64 bytes so 4 elements
+            input[0] = 11265828233016354482; //leftchild[0]
+            input[1] = 6145866189825516934; //leftchild[1]
+            input[2] = 6454953523820324073; //leftchild[2]
+            input[3] = 15406202713804987152; //leftchild[3]
+            // 4 more from the rightchild
+
+            input[4] = 13344658992737595374; //rightchild[0]
+            input[5] = 7043377785056816644; // rightchild[1]
+            input[6] = 13680389729288841036; //rightchild[2]
+            input[7] = 2382165459469383132; //rightchild[3]
+             // ---------------------------------------
+             // Second iteration
+            // input[0] = 10867043059703570303; //leftchild[0]
+            // input[1] = 6231198139502073108; //leftchild[1]
+            // input[2] = 5762200655505804382; //leftchild[2]
+            // input[3] = 12545797600590860965; //leftchild[3]
+            // input[4] = 11742412487727341629; //rightchild[0]
+            // input[5] = 8324230513740804769; // rightchild[1]
+            // input[6] = 15821162717326743443; //rightchild[2]
+            // input[7] = 10805897027267208374; //rightchild[3]
+
+            PoseidonHash poseidon = new PoseidonHash();
+            // Poseidon poseidon = new Poseidon();
+
             // Hash the two children along with the capacity
-            uint256[] memory computedHash = poseidon.hash_n_to_m_no_pad(input, 4);
+            uint256[4] memory computedHash = poseidon.hashNToMNoPad(input, 4);
+            // uint256[] memory computedHash = poseidon.hash_n_to_m_no_pad(input, 4);
 
+            // uint256 memorycomputedHash2 = PoseidonT4.hash([leftChildNode, rightChildNode, convertCapacityToUint256(capacity)]);
             require(currentRoot == computedHash[0], "Root hash mismatch");
-
+            
             if (!isFinalNode) {
                 currentRoot = (path[i] == 0) ? leftChildNode : rightChildNode;
 
@@ -70,10 +95,11 @@ library SMTProof {
 
         // The last proof element holds the value
         bytes memory value = proof[proof.length - 1];
-        console.log("value");
-        console.logBytes(value);
+        // console.log("value");
+        // console.logBytes(value);
 
         // Prepare value for hashing
+        // For the final hash we need an inputs of size 12 and assign the 8 elements of it with 64 bytes from the value
         uint256 finalHash = PoseidonT3.hash([prepareValueForHashing(value), convertCapacityToUint256(branchCapacity())]);
         require(finalHash == currentRoot, "Final root hash mismatch");
 
@@ -164,7 +190,7 @@ library SMTProof {
 
         // Process usedBits
         for (uint256 i = 0; i < index; ++i) {
-            console.log("check", usedBits[i]);
+            // console.log("check", usedBits[i]);
             if (usedBits[i] == 1) {
                 accs[i % 4] = accs[i % 4] | (uint64(1) << n[i % 4]);
             }
