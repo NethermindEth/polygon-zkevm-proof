@@ -3,6 +3,7 @@ pragma solidity ^0.8.25;
 
 import {PoseidonT3} from "lib/poseidon-solidity/contracts/PoseidonT3.sol";
 import {PoseidonT4} from "lib/poseidon-solidity/contracts/PoseidonT4.sol";
+import { Poseidon } from "lib/Solidity-goldilocks-poseidon/contract/Poseidon.sol";
 import { console } from "lib/forge-std/src/console.sol";
 
 library SMTProof {
@@ -34,12 +35,17 @@ library SMTProof {
 
             uint256 leftChildNode = uint256(leftChild);
             uint256 rightChildNode = uint256(rightChild);
-  
-            // Hash the two children along with the capacity
-            uint256 computedHash = PoseidonT4.hash([leftChildNode, rightChildNode, convertCapacityToUint256(capacity)]);
 
-            console.log(computedHash, currentRoot);
-            require(currentRoot == computedHash, "Root hash mismatch");
+            uint256[] memory input = new uint256[](3);
+            input[0] = leftChildNode;
+            input[1] = rightChildNode;
+            input[2] = convertCapacityToUint256(capacity);
+
+            Poseidon poseidon = new Poseidon();
+            // Hash the two children along with the capacity
+            uint256[] memory computedHash = poseidon.hash_n_to_m_no_pad(input, 4);
+
+            require(currentRoot == computedHash[0], "Root hash mismatch");
 
             if (!isFinalNode) {
                 currentRoot = (path[i] == 0) ? leftChildNode : rightChildNode;
@@ -180,40 +186,27 @@ library SMTProof {
     }
 
     function prepareValueForHashing(bytes memory proof) private pure returns (uint256) {
-        require(proof.length >= 32, "Proof must be at least 32 bytes long");
+        require(proof.length <= 32, "Bytes value exceeds 32 bytes");
+        uint256 result;
 
-        // Step 1: Extract the last 32 bytes from the proof array
-        bytes32 scalarBytes;
-        assembly {
-            scalarBytes := mload(add(proof, add(0x20, sub(mload(proof), 32))))
+        // Iterate through each byte in the `value` and shift it into the result
+        for (uint256 i = 0; i < proof.length; i++) {
+            result = result << 8; // Shift left by 8 bits
+            result |= uint8(proof[i]); // Add the byte to the result
         }
 
-        uint256 scalar = uint256(scalarBytes); // Convert the last 32 bytes to uint256
-
-        // Initialize variables to store the parts and the final result
-        uint256[8] memory parts;
-        uint256 result = 0;
-
-        // Split the scalar into 8 parts of 32 bits each
-        parts[0] = scalar & MASK;
-        parts[1] = (scalar >> 32) & MASK;
-        parts[2] = (scalar >> 64) & MASK;
-        parts[3] = (scalar >> 96) & MASK;
-        parts[4] = (scalar >> 128) & MASK;
-        parts[5] = (scalar >> 160) & MASK;
-        parts[6] = (scalar >> 192) & MASK;
-        parts[7] = (scalar >> 224) & MASK;
-
-        // Pack the parts back into a single uint256 value
-        result |= (parts[0] << 0);
-        result |= (parts[1] << 32);
-        result |= (parts[2] << 64);
-        result |= (parts[3] << 96);
-        result |= (parts[4] << 128);
-        result |= (parts[5] << 160);
-        result |= (parts[6] << 192);
-        result |= (parts[7] << 224);
-
         return result;
+    }
+
+    function combineUint256Array(uint256[] memory arr) public pure returns (uint256) {
+        require(arr.length <= 8, "Array is too large to combine into a single uint256");
+        
+        uint256 combinedValue = 0;
+
+        for (uint256 i = 0; i < arr.length; i++) {
+            combinedValue |= arr[i] << (i * 32); 
+        }
+
+        return combinedValue;
     }
 }
