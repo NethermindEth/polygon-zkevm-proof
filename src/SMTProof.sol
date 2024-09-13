@@ -3,8 +3,8 @@ pragma solidity ^0.8.25;
 
 import {PoseidonT3} from "lib/poseidon-solidity/contracts/PoseidonT3.sol";
 import {PoseidonT4} from "lib/poseidon-solidity/contracts/PoseidonT4.sol";
-import { Poseidon } from "lib/Solidity-goldilocks-poseidon/contract/Poseidon.sol";
-import { console } from "lib/forge-std/src/console.sol";
+import {Poseidon} from "lib/Solidity-goldilocks-poseidon/contract/Poseidon.sol";
+import {console} from "lib/forge-std/src/console.sol";
 
 library SMTProof {
     uint256 constant MASK = 4294967295; // Equivalent to big.NewInt(4294967295)
@@ -15,7 +15,6 @@ library SMTProof {
 
     function verifyAndGetVal(NodeKey calldata stateRoot, bytes[] memory proof, NodeKey calldata key)
         external
-        pure
         returns (bytes memory, bool)
     {
         require(proof.length > 0, "Proof cannot be empty");
@@ -26,7 +25,7 @@ library SMTProof {
 
         for (uint256 i; i < proof.length; ++i) {
             bool isFinalNode = proof[i].length == 65;
-            
+
             // Use appropriate capacity for the node (branch or leaf)
             uint64[4] memory capacity = isFinalNode ? leafCapacity() : branchCapacity();
 
@@ -74,7 +73,7 @@ library SMTProof {
         console.log("value");
         console.logBytes(value);
 
-        // Prepare value for hashing 
+        // Prepare value for hashing
         uint256 finalHash = PoseidonT3.hash([prepareValueForHashing(value), convertCapacityToUint256(branchCapacity())]);
         require(finalHash == currentRoot, "Final root hash mismatch");
 
@@ -102,21 +101,19 @@ library SMTProof {
 
     function nodeKeyToBytes32(NodeKey memory nodeKey) private pure returns (bytes32) {
         return bytes32(
-            (uint256(nodeKey.parts[3]) << 192) |  
-            (uint256(nodeKey.parts[2]) << 128) |  
-            (uint256(nodeKey.parts[1]) << 64)  |  
-            uint256(nodeKey.parts[0])              
+            (uint256(nodeKey.parts[3]) << 192) | (uint256(nodeKey.parts[2]) << 128) | (uint256(nodeKey.parts[1]) << 64)
+                | uint256(nodeKey.parts[0])
         );
     }
 
     function breakUint256ToUint64Array(uint256 value) internal pure returns (uint64[4] memory) {
         uint64[4] memory result;
-        
-        result[0] = uint64(value & 0xFFFFFFFFFFFFFFFF); 
-        result[1] = uint64((value >> 64) & 0xFFFFFFFFFFFFFFFF); 
-        result[2] = uint64((value >> 128) & 0xFFFFFFFFFFFFFFFF); 
-        result[3] = uint64((value >> 192) & 0xFFFFFFFFFFFFFFFF); 
-        
+
+        result[0] = uint64(value & 0xFFFFFFFFFFFFFFFF);
+        result[1] = uint64((value >> 64) & 0xFFFFFFFFFFFFFFFF);
+        result[2] = uint64((value >> 128) & 0xFFFFFFFFFFFFFFFF);
+        result[3] = uint64((value >> 192) & 0xFFFFFFFFFFFFFFFF);
+
         return result;
     }
 
@@ -200,11 +197,11 @@ library SMTProof {
 
     function combineUint256Array(uint256[] memory arr) public pure returns (uint256) {
         require(arr.length <= 8, "Array is too large to combine into a single uint256");
-        
+
         uint256 combinedValue = 0;
 
         for (uint256 i = 0; i < arr.length; i++) {
-            combinedValue |= arr[i] << (i * 32); 
+            combinedValue |= arr[i] << (i * 32);
         }
 
         return combinedValue;
