@@ -14,7 +14,6 @@ contract SMTProofTest is Test {
             uint256(3331522115182907380),
             uint256(2118679398451823561)
         ];
-
         SMTProof.NodeKey memory stateRoot = SMTProof.NodeKey(stateRootValue);
 
         uint256[4] memory keyValue = [
@@ -52,5 +51,7 @@ contract SMTProofTest is Test {
 
         // Call the function to verify and get the value
         (bytes memory value, bool success) = SMTProof.verifyAndGetVal(stateRoot, proof, key);
+        vm.assertTrue(success, "Validation should not fail");
+        vm.assertEq(value, proof[11], "Proof should be valid");
     }
 }
