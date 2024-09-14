@@ -843,7 +843,7 @@ contract PoseidonHash {
             state[i] = addmod(inputState[i], C[i], PRIME);
         }
         if (isLeaf) {
-            state[0] = addmod(state[0], 1, PRIME);
+            state[8] = addmod(state[8], 1, PRIME);
         }
 
         // First half of full rounds
@@ -920,11 +920,7 @@ contract PoseidonHash {
         return newState;
     }
 
-    function hashNToMNoPad(uint256[] memory inputsBase, uint256 numOutputs, bool isLeaf)
-        public
-        view
-        returns (uint256[4] memory)
-    {
+    function hashNToMNoPad(uint256[] memory inputsBase, bool isLeaf) public view returns (uint256[4] memory) {
         // Step 1: Determine the effective length by stripping trailing zeros
         uint256 inputsLength = inputsBase.length;
         while (inputsLength > 0 && inputsBase[inputsLength - 1] == 0) {
@@ -955,19 +951,5 @@ contract PoseidonHash {
             state = permute(state, isLeaf);
         }
         return [state[0], state[1], state[2], state[3]];
-
-        // uint256[] memory outputs = new uint256[](numOutputs);
-        // uint256 outputsPushed = 0;
-        // uint256 nOutputRounds = (numOutputs + SPONGE_RATE - 1) / SPONGE_RATE;
-
-        // for (uint256 i = 0; i < nOutputRounds; i++) {
-        //     for (uint256 x = 0; x < SPONGE_RATE && outputsPushed < numOutputs; x++) {
-        //         outputs[outputsPushed] = state[x];
-        //         outputsPushed++;
-        //     }
-        //     state = permute(state);
-        // }
-
-        // return outputs;
     }
 }

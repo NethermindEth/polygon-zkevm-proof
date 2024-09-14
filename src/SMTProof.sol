@@ -50,54 +50,53 @@ library SMTProof {
             // input[6] = 15821162717326743443; //rightchild[2]
             // input[7] = 10805897027267208374; //rightchild[3]
             uint256[] memory input = prepareInputs(leftChildNode, rightChildNode);
-            console.log("-----------------------");
-            console.log("left", leftChildNode);
-            console.log("right", rightChildNode);
-            console.log(input[0]);
-            console.log(input[1]);
-            console.log(input[2]);
-            console.log(input[3]);
-            console.log(input[4]);
-            console.log(input[5]);
-            console.log(input[6]);
-            console.log(input[7]);
+            // console.log("-----------------------");
+            // console.logBytes(proof[i]);
+            // console.log("left", leftChildNode);
+            // console.log("right", rightChildNode);
+            // console.log(input[0]);
+            // console.log(input[1]);
+            // console.log(input[2]);
+            // console.log(input[3]);
+            // console.log(input[4]);
+            // console.log(input[5]);
+            // console.log(input[6]);
+            // console.log(input[7]);
 
             // Poseidon poseidon = new Poseidon();
 
             // Hash the two children along with the capacity
             uint256[4] memory computedHash = hash(leftChildNode, rightChildNode, proof[i]);
-            console.log("-- hashes --");
-            console.log(computedHash[0]);
-            console.log(computedHash[1]);
-            console.log(computedHash[2]);
-            console.log(computedHash[3]);
+            // console.log("-- hashes --");
+            // console.log(computedHash[0]);
+            // console.log(computedHash[1]);
+            // console.log(computedHash[2]);
+            // console.log(computedHash[3]);
 
             // uint256[] memory computedHash = poseidon.hash_n_to_m_no_pad(input, 4);
 
-            console.log(currentRoot, uint256(nodeKeyToBytes32(NodeKey(computedHash))));
             require(currentRoot == uint256(nodeKeyToBytes32(NodeKey(computedHash))), "Root hash mismatch");
 
             if (proof[i].length != 65) {
                 // not final node
                 currentRoot = (path[i] == 0) ? leftChildNode : rightChildNode;
-
                 if (currentRoot == 0) {
                     return ("", false); // Non-existent value
                 }
             } else {
                 if (joinKey(path, i, leftChild) == nodeKeyToBytes32(key)) {
-                    currentRoot = rightChildNode;
+                    console.log("rightChild", rightChildNode);
                     // foundValue = true;
                     // The last proof element holds the value
                     bytes memory value = proof[proof.length - 1];
+                    console.log(uint256(bytes32(value)));
                     // console.log("value");
                     // console.logBytes(value);
 
                     // Prepare value for hashing
                     // For the final hash we need an inputs of size 12 and assign the 8 elements of it with 64 bytes from the value
-                    computedHash = (new PoseidonHash()).hashNToMNoPad(
-                        prepareInputs(uint256(bytesToBytes32(value, 0)), uint256(bytesToBytes32(value, 32))), 4, false
-                    );
+                    computedHash =
+                        (new PoseidonHash()).hashNToMNoPad(prepareInputs(prepareValueForHashing(value), 0), false);
                     require(
                         uint256(nodeKeyToBytes32(NodeKey(computedHash))) == rightChildNode, "Final root hash mismatch"
                     );
@@ -117,7 +116,7 @@ library SMTProof {
         returns (uint256[4] memory inputs)
     {
         uint256[] memory input = prepareInputs(leftChildNode, rightChildNode);
-        uint256[4] memory computedHash = (new PoseidonHash()).hashNToMNoPad(input, 4, proof.length == 65);
+        uint256[4] memory computedHash = (new PoseidonHash()).hashNToMNoPad(input, proof.length == 65);
         return computedHash;
     }
 
