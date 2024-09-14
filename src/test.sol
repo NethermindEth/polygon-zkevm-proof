@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import {console} from "lib/forge-std/src/console.sol";
 
+import {console} from "lib/forge-std/src/console.sol";
 
 contract PoseidonHash {
     uint256 constant SPONGE_RATE = 8;
@@ -133,7 +133,7 @@ contract PoseidonHash {
         0xccaa5446d71fe6a5
     ];
 
-  uint256[] public S = [
+    uint256[] public S = [
         0x19,
         0x3d999c961b7c63b0,
         0x814e82efcd172529,
@@ -643,174 +643,18 @@ contract PoseidonHash {
     ];
 
     uint256[12][12] internal M = [
-        [
-            0x19,
-            0x14,
-            0x22,
-            0x12,
-            0x27,
-            0xd,
-            0xd,
-            0x1c,
-            0x2,
-            0x10,
-            0x29,
-            0xf
-        ],
-        [
-            0xf,
-            0x11,
-            0x14,
-            0x22,
-            0x12,
-            0x27,
-            0xd,
-            0xd,
-            0x1c,
-            0x2,
-            0x10,
-            0x29
-        ],
-        [
-            0x29,
-            0xf,
-            0x11,
-            0x14,
-            0x22,
-            0x12,
-            0x27,
-            0xd,
-            0xd,
-            0x1c,
-            0x2,
-            0x10
-        ],
-        [
-            0x10,
-            0x29,
-            0xf,
-            0x11,
-            0x14,
-            0x22,
-            0x12,
-            0x27,
-            0xd,
-            0xd,
-            0x1c,
-            0x2
-        ],
-        [
-            0x2,
-            0x10,
-            0x29,
-            0xf,
-            0x11,
-            0x14,
-            0x22,
-            0x12,
-            0x27,
-            0xd,
-            0xd,
-            0x1c
-        ],
-        [
-            0x1c,
-            0x2,
-            0x10,
-            0x29,
-            0xf,
-            0x11,
-            0x14,
-            0x22,
-            0x12,
-            0x27,
-            0xd,
-            0xd
-        ],
-        [
-            0xd,
-            0x1c,
-            0x2,
-            0x10,
-            0x29,
-            0xf,
-            0x11,
-            0x14,
-            0x22,
-            0x12,
-            0x27,
-            0xd
-        ],
-        [
-            0xd,
-            0xd,
-            0x1c,
-            0x2,
-            0x10,
-            0x29,
-            0xf,
-            0x11,
-            0x14,
-            0x22,
-            0x12,
-            0x27
-        ],
-        [
-            0x27,
-            0xd,
-            0xd,
-            0x1c,
-            0x2,
-            0x10,
-            0x29,
-            0xf,
-            0x11,
-            0x14,
-            0x22,
-            0x12
-        ],
-        [
-            0x12,
-            0x27,
-            0xd,
-            0xd,
-            0x1c,
-            0x2,
-            0x10,
-            0x29,
-            0xf,
-            0x11,
-            0x14,
-            0x22
-        ],
-        [
-            0x22,
-            0x12,
-            0x27,
-            0xd,
-            0xd,
-            0x1c,
-            0x2,
-            0x10,
-            0x29,
-            0xf,
-            0x11,
-            0x14
-        ],
-        [
-            0x14,
-            0x22,
-            0x12,
-            0x27,
-            0xd,
-            0xd,
-            0x1c,
-            0x2,
-            0x10,
-            0x29,
-            0xf,
-            0x11
-        ]
+        [0x19, 0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10, 0x29, 0xf],
+        [0xf, 0x11, 0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10, 0x29],
+        [0x29, 0xf, 0x11, 0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10],
+        [0x10, 0x29, 0xf, 0x11, 0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2],
+        [0x2, 0x10, 0x29, 0xf, 0x11, 0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c],
+        [0x1c, 0x2, 0x10, 0x29, 0xf, 0x11, 0x14, 0x22, 0x12, 0x27, 0xd, 0xd],
+        [0xd, 0x1c, 0x2, 0x10, 0x29, 0xf, 0x11, 0x14, 0x22, 0x12, 0x27, 0xd],
+        [0xd, 0xd, 0x1c, 0x2, 0x10, 0x29, 0xf, 0x11, 0x14, 0x22, 0x12, 0x27],
+        [0x27, 0xd, 0xd, 0x1c, 0x2, 0x10, 0x29, 0xf, 0x11, 0x14, 0x22, 0x12],
+        [0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10, 0x29, 0xf, 0x11, 0x14, 0x22],
+        [0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10, 0x29, 0xf, 0x11, 0x14],
+        [0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10, 0x29, 0xf, 0x11]
     ];
 
     uint256[12][12] internal P = [
@@ -992,11 +836,14 @@ contract PoseidonHash {
         return result;
     }
 
-    function permute(uint256[12] memory inputState) internal view returns (uint256[12] memory) {
+    function permute(uint256[12] memory inputState, bool isLeaf) internal view returns (uint256[12] memory) {
         uint256[12] memory state;
         // Add constants to the input state
         for (uint256 i = 0; i < 12; i++) {
             state[i] = addmod(inputState[i], C[i], PRIME);
+        }
+        if (isLeaf) {
+            state[0] = addmod(state[0], 1, PRIME);
         }
 
         // First half of full rounds
@@ -1013,7 +860,6 @@ contract PoseidonHash {
             state = mix(state, M);
         }
 
-
         // Middle full round
         for (uint256 i = 0; i < 12; i++) {
             state[i] = pow7(state[i]);
@@ -1029,26 +875,15 @@ contract PoseidonHash {
             state[0] = pow7(state[0]);
             state[0] = addmod(state[0], C[(nRoundsF / 2 + 1) * t + r], PRIME);
 
-
             uint256 s0 = 0;
             for (uint256 j = 0; j < t; j++) {
-
                 s0 = addmod(s0, mulmod(S[(t * 2 - 1) * r + j], state[j], PRIME), PRIME);
-
             }
             for (uint256 k = 1; k < t; k++) {
-
-                state[k] = addmod(
-                    state[k],
-                    mulmod(state[0], S[(t * 2 - 1) * r + t + k - 1], PRIME),
-                    PRIME
-                );
-
+                state[k] = addmod(state[k], mulmod(state[0], S[(t * 2 - 1) * r + t + k - 1], PRIME), PRIME);
             }
             state[0] = s0;
         }
-
-
 
         // Second half of full rounds
         for (uint256 r = 0; r < nRoundsF / 2 - 1; r++) {
@@ -1058,11 +893,7 @@ contract PoseidonHash {
             }
             // Add round constants
             for (uint256 i = 0; i < 12; i++) {
-                state[i] = addmod(
-                    state[i],
-                    C[(nRoundsF / 2 + 1) * t + nRoundsP + r * t + i],
-                    PRIME
-                );
+                state[i] = addmod(state[i], C[(nRoundsF / 2 + 1) * t + nRoundsP + r * t + i], PRIME);
             }
             // Mix layer
             state = mix(state, M);
@@ -1077,11 +908,7 @@ contract PoseidonHash {
         return state;
     }
 
-    function mix(uint256[12] memory state, uint256[12][12] memory matrix)
-        internal
-        pure
-        returns (uint256[12] memory)
-    {
+    function mix(uint256[12] memory state, uint256[12][12] memory matrix) internal pure returns (uint256[12] memory) {
         uint256[12] memory newState;
         for (uint256 i = 0; i < 12; i++) {
             uint256 acc = 0;
@@ -1093,95 +920,40 @@ contract PoseidonHash {
         return newState;
     }
 
-    function hashNToMNoPad(uint256[] memory inputsBase, uint256 numOutputs)
+    function hashNToMNoPad(uint256[] memory inputsBase, uint256 numOutputs, bool isLeaf)
         public
         view
         returns (uint256[4] memory)
     {
-
         // Step 1: Determine the effective length by stripping trailing zeros
-    uint256 effectiveLength = inputsBase.length;
-    while (effectiveLength > 0 && inputsBase[effectiveLength - 1] == 0) {
-        effectiveLength--;
-    }
+        uint256 inputsLength = inputsBase.length;
+        while (inputsLength > 0 && inputsBase[inputsLength - 1] == 0) {
+            inputsLength--;
+        }
 
-    // Step 2: Create a new array with the non-zero elements
-    uint256[] memory inputs = new uint256[](effectiveLength);
-    for (uint256 i = 0; i < effectiveLength; i++) {
-        // Reduce each input modulo PRIME
-        inputs[i] = inputsBase[i] % PRIME;
-    }
-        uint256 inputsLength = inputs.length;
         uint256[12] memory state;
         for (uint256 i = 0; i < 12; i++) {
             state[i] = ZERO;
         }
         uint256 nChunks = inputsLength / SPONGE_RATE;
 
-
         // Absorb the inputs in chunks
-
         for (uint256 i = 0; i < nChunks; i++) {
-            // for (uint256 j = 0; j < SPONGE_RATE; j++) {
-            //     state[j] = inputsBase[i * SPONGE_RATE + j];
-            // }
-
-            // state = permute(state);
-            state[0] = inputsBase[i * 8 + 0];
-            state[1] = inputsBase[i * 8 + 1];
-            state[2] = inputsBase[i * 8 + 2];
-            state[3] = inputsBase[i * 8 + 3];
-            state[4] = inputsBase[i * 8 + 4];
-            state[5] = inputsBase[i * 8 + 5];
-            state[6] = inputsBase[i * 8 + 6];
-            state[7] = inputsBase[i * 8 + 7];
-            // for (uint256 i = 0; i < 12; i++){
-            //     console.log(state[i]);
-            // }
-            uint256[12] memory n_state = permute(state);
-            state[0] = n_state[0];
-            state[1] = n_state[1];
-            state[2] = n_state[2];
-            state[3] = n_state[3];
-            state[4] = n_state[4];
-            state[5] = n_state[5];
-            state[6] = n_state[6];
-            state[7] = n_state[7];
-            state[8] = n_state[8];
-            state[9] = n_state[9];
-            state[10] = n_state[10];
-            state[11] = n_state[11];
-            
-
+            for (uint256 j = 0; j < SPONGE_RATE; j++) {
+                state[j] = inputsBase[i * SPONGE_RATE + j];
+            }
+            state = permute(state, isLeaf);
         }
-
 
         uint256 start = nChunks * SPONGE_RATE;
         uint256 remaining = inputsLength - start;
 
-        if (remaining > 0 && remaining < state.length) {
+        if (remaining > 0) {
             for (uint256 i = 0; i < remaining; i++) {
                 state[i] = inputsBase[start + i];
             }
-            // state = permute(state);
-            uint256[12] memory n_state = permute(state);
-            state[0] = n_state[0];
-            state[1] = n_state[1];
-            state[2] = n_state[2];
-            state[3] = n_state[3];
-            state[4] = n_state[4];
-            state[5] = n_state[5];
-            state[6] = n_state[6];
-            state[7] = n_state[7];
-            state[8] = n_state[8];
-            state[9] = n_state[9];
-            state[10] = n_state[10];
-            state[11] = n_state[11];
+            state = permute(state, isLeaf);
         }
-        // console.log("new");
-        //  for (uint256 i = 0; i < 12; i++){
-        //         console.log(state[i]);
-        //     }
         return [state[0], state[1], state[2], state[3]];
 
         // uint256[] memory outputs = new uint256[](numOutputs);

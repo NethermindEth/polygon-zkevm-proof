@@ -8,20 +8,20 @@ contract SMTProofTest is Test {
     function setUp() public {}
 
     function test_VerifyAndGetVal() public {
-        uint64[4] memory stateRootValue = [
-            uint64(12261328023350694784),
-            uint64(5398999462454257983),
-            uint64(3331522115182907380),
-            uint64(2118679398451823561)
+        uint256[4] memory stateRootValue = [
+            uint256(12261328023350694784),
+            uint256(5398999462454257983),
+            uint256(3331522115182907380),
+            uint256(2118679398451823561)
         ];
 
         SMTProof.NodeKey memory stateRoot = SMTProof.NodeKey(stateRootValue);
 
-        uint64[4] memory keyValue = [
-            uint64(6951263719529201853),
-            uint64(3182020212305369903),
-            uint64(4269708063443223864),
-            uint64(10115124450955214537)
+        uint256[4] memory keyValue = [
+            uint256(6951263719529201853),
+            uint256(3182020212305369903),
+            uint256(4269708063443223864),
+            uint256(10115124450955214537)
         ];
         SMTProof.NodeKey memory key = SMTProof.NodeKey(keyValue);
 

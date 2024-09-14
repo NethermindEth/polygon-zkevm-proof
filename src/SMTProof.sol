@@ -4,7 +4,6 @@ pragma solidity ^0.8.25;
 import {PoseidonT3} from "lib/poseidon-solidity/contracts/PoseidonT3.sol";
 import {PoseidonT4} from "lib/poseidon-solidity/contracts/PoseidonT4.sol";
 import {PoseidonHash} from "./test.sol";
-// import {Poseidon} from "lib/Solidity-goldilocks-poseidon/contract/Poseidon.sol";
 
 import {console} from "lib/forge-std/src/console.sol";
 
@@ -12,7 +11,7 @@ library SMTProof {
     uint256 constant MASK = 4294967295; // Equivalent to big.NewInt(4294967295)
 
     struct NodeKey {
-        uint64[4] parts;
+        uint256[4] parts;
     }
 
     function verifyAndGetVal(NodeKey calldata stateRoot, bytes[] memory proof, NodeKey calldata key)
@@ -23,35 +22,25 @@ library SMTProof {
 
         uint8[256] memory path = getPath(key);
         uint256 currentRoot = uint256(nodeKeyToBytes32(stateRoot));
-        bool foundValue = false;
 
         for (uint256 i; i < proof.length; ++i) {
-            bool isFinalNode = proof[i].length == 65;
-
-            // Use appropriate capacity for the node (branch or leaf)
-            uint64[4] memory capacity = isFinalNode ? leafCapacity() : branchCapacity();
-
             bytes32 leftChild = bytesToBytes32(proof[i], 0);
             bytes32 rightChild = bytesToBytes32(proof[i], 32);
 
             uint256 leftChildNode = uint256(leftChild);
             uint256 rightChildNode = uint256(rightChild);
 
+            // require(input[0] == 11265828233016354482, "wrong input 0");
+            // require(input[1] == 6145866189825516934, "wrong input 1");
+            // require(input[2] == 6454953523820324073, "wrong input 2");
+            // require(input[3] == 15406202713804987152, "wrong input 3");
+            // require(input[4] == 13344658992737595374, "wrong input 4");
+            // require(input[5] == 7043377785056816644, "wrong input 5");
+            // require(input[6] == 13680389729288841036, "wrong input 6");
+            // require(input[7] == 2382165459469383132, "wrong input 7");
 
-            uint256[] memory input = new uint256[](12);
-            // leftchild splitted into 64 bytes so 4 elements
-            input[0] = 11265828233016354482; //leftchild[0]
-            input[1] = 6145866189825516934; //leftchild[1]
-            input[2] = 6454953523820324073; //leftchild[2]
-            input[3] = 15406202713804987152; //leftchild[3]
-            // 4 more from the rightchild
-
-            input[4] = 13344658992737595374; //rightchild[0]
-            input[5] = 7043377785056816644; // rightchild[1]
-            input[6] = 13680389729288841036; //rightchild[2]
-            input[7] = 2382165459469383132; //rightchild[3]
-             // ---------------------------------------
-             // Second iteration
+            // ---------------------------------------
+            // Second iteration
             // input[0] = 10867043059703570303; //leftchild[0]
             // input[1] = 6231198139502073108; //leftchild[1]
             // input[2] = 5762200655505804382; //leftchild[2]
@@ -60,53 +49,101 @@ library SMTProof {
             // input[5] = 8324230513740804769; // rightchild[1]
             // input[6] = 15821162717326743443; //rightchild[2]
             // input[7] = 10805897027267208374; //rightchild[3]
+            uint256[] memory input = prepareInputs(leftChildNode, rightChildNode);
+            console.log("-----------------------");
+            console.log("left", leftChildNode);
+            console.log("right", rightChildNode);
+            console.log(input[0]);
+            console.log(input[1]);
+            console.log(input[2]);
+            console.log(input[3]);
+            console.log(input[4]);
+            console.log(input[5]);
+            console.log(input[6]);
+            console.log(input[7]);
 
-            PoseidonHash poseidon = new PoseidonHash();
             // Poseidon poseidon = new Poseidon();
 
             // Hash the two children along with the capacity
-            uint256[4] memory computedHash = poseidon.hashNToMNoPad(input, 4);
+            uint256[4] memory computedHash = hash(leftChildNode, rightChildNode, proof[i]);
+            console.log("-- hashes --");
+            console.log(computedHash[0]);
+            console.log(computedHash[1]);
+            console.log(computedHash[2]);
+            console.log(computedHash[3]);
+
             // uint256[] memory computedHash = poseidon.hash_n_to_m_no_pad(input, 4);
 
-            // uint256 memorycomputedHash2 = PoseidonT4.hash([leftChildNode, rightChildNode, convertCapacityToUint256(capacity)]);
-            require(currentRoot == computedHash[0], "Root hash mismatch");
-            
-            if (!isFinalNode) {
+            console.log(currentRoot, uint256(nodeKeyToBytes32(NodeKey(computedHash))));
+            require(currentRoot == uint256(nodeKeyToBytes32(NodeKey(computedHash))), "Root hash mismatch");
+
+            if (proof[i].length != 65) {
+                // not final node
                 currentRoot = (path[i] == 0) ? leftChildNode : rightChildNode;
 
                 if (currentRoot == 0) {
                     return ("", false); // Non-existent value
                 }
             } else {
-                bytes32 joinedKey = joinKey(path, i, leftChild); // Join key logic
-                if (joinedKey == nodeKeyToBytes32(key)) {
-                    foundValue = true;
+                if (joinKey(path, i, leftChild) == nodeKeyToBytes32(key)) {
                     currentRoot = rightChildNode;
-                    break;
+                    // foundValue = true;
+                    // The last proof element holds the value
+                    bytes memory value = proof[proof.length - 1];
+                    // console.log("value");
+                    // console.logBytes(value);
+
+                    // Prepare value for hashing
+                    // For the final hash we need an inputs of size 12 and assign the 8 elements of it with 64 bytes from the value
+                    computedHash = (new PoseidonHash()).hashNToMNoPad(
+                        prepareInputs(uint256(bytesToBytes32(value, 0)), uint256(bytesToBytes32(value, 32))), 4, false
+                    );
+                    require(
+                        uint256(nodeKeyToBytes32(NodeKey(computedHash))) == rightChildNode, "Final root hash mismatch"
+                    );
+                    return (value, true);
                 } else {
                     return ("", false); // Proof shows non-existence
                 }
             }
         }
-
-        if (!foundValue) {
-            revert("Proof insufficient to verify non-existence");
-        }
-
-        // The last proof element holds the value
-        bytes memory value = proof[proof.length - 1];
-        // console.log("value");
-        // console.logBytes(value);
-
-        // Prepare value for hashing
-        // For the final hash we need an inputs of size 12 and assign the 8 elements of it with 64 bytes from the value
-        uint256 finalHash = PoseidonT3.hash([prepareValueForHashing(value), convertCapacityToUint256(branchCapacity())]);
-        require(finalHash == currentRoot, "Final root hash mismatch");
-
-        return (value, true);
+        revert("Proof insufficient to verify non-existence");
     }
 
     // Utility Functions
+
+    function hash(uint256 leftChildNode, uint256 rightChildNode, bytes memory proof)
+        internal
+        returns (uint256[4] memory inputs)
+    {
+        uint256[] memory input = prepareInputs(leftChildNode, rightChildNode);
+        uint256[4] memory computedHash = (new PoseidonHash()).hashNToMNoPad(input, 4, proof.length == 65);
+        return computedHash;
+    }
+
+    function prepareInputs(uint256 leftChildNode, uint256 rightChildNode)
+        internal
+        pure
+        returns (uint256[] memory inputs)
+    {
+        inputs = new uint256[](12);
+        uint256 mask = (1 << 64) - 1;
+        inputs[0] = (leftChildNode & mask);
+        leftChildNode >>= 64;
+        inputs[1] = (leftChildNode & mask);
+        leftChildNode >>= 64;
+        inputs[2] = (leftChildNode & mask);
+        leftChildNode >>= 64;
+        inputs[3] = leftChildNode;
+
+        inputs[4] = (rightChildNode & mask);
+        rightChildNode >>= 64;
+        inputs[5] = (rightChildNode & mask);
+        rightChildNode >>= 64;
+        inputs[6] = (rightChildNode & mask);
+        rightChildNode >>= 64;
+        inputs[7] = rightChildNode;
+    }
 
     function leafCapacity() private pure returns (uint64[4] memory) {
         return [uint64(1), uint64(0), uint64(0), uint64(0)];
@@ -152,7 +189,7 @@ library SMTProof {
 
     // Get the path for a given key
     function getPath(NodeKey memory key) private pure returns (uint8[256] memory path) {
-        uint64[4] memory auxKey = key.parts;
+        uint256[4] memory auxKey = key.parts;
         uint256 index;
 
         for (uint256 j; j < 64; ++j) {
