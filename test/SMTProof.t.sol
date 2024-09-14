@@ -1,13 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {SMTProof} from "../src/SMTProof.sol";
+import {PoseidonHash} from "../src/Poseidon.sol";
 
 contract SMTProofTest is Test {
-    function setUp() public {}
+    using SMTProof for PoseidonHash;
 
-    function test_VerifyAndGetVal() public {
+    PoseidonHash poseidon;
+
+    function setUp() public {
+        poseidon = new PoseidonHash();
+    }
+
+    function test_VerifyAndGetVal() public view {
         uint256[4] memory stateRootValue = [
             uint256(12261328023350694784),
             uint256(5398999462454257983),
@@ -50,7 +57,7 @@ contract SMTProofTest is Test {
         proof[11] = hex"deadbeef";
 
         // Call the function to verify and get the value
-        (bytes memory value, bool success) = SMTProof.verifyAndGetVal(stateRoot, proof, key);
+        (bytes memory value, bool success) = poseidon.verifyAndGetVal(stateRoot, proof, key);
         vm.assertTrue(success, "Validation should not fail");
         vm.assertEq(value, proof[11], "Proof should be valid");
     }

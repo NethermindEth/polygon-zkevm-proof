@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {console} from "lib/forge-std/src/console.sol";
-
 contract PoseidonHash {
     uint256 constant SPONGE_RATE = 8;
     uint256 constant SPONGE_WIDTH = 12;
@@ -12,7 +10,7 @@ contract PoseidonHash {
     uint256 constant nRoundsP = 22;
     uint256 constant ZERO = 0;
 
-    uint256[] internal C = [
+    uint256[] C = [
         0xb585f766f2144405,
         0x7746a55f43921ad7,
         0xb2fb0d31cee799b4,
@@ -133,7 +131,7 @@ contract PoseidonHash {
         0xccaa5446d71fe6a5
     ];
 
-    uint256[] public S = [
+    uint256[] S = [
         0x19,
         0x3d999c961b7c63b0,
         0x814e82efcd172529,
@@ -642,7 +640,7 @@ contract PoseidonHash {
         0xf
     ];
 
-    uint256[12][12] internal M = [
+    uint256[12][12] M = [
         [0x19, 0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10, 0x29, 0xf],
         [0xf, 0x11, 0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10, 0x29],
         [0x29, 0xf, 0x11, 0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10],
@@ -657,7 +655,7 @@ contract PoseidonHash {
         [0x14, 0x22, 0x12, 0x27, 0xd, 0xd, 0x1c, 0x2, 0x10, 0x29, 0xf, 0x11]
     ];
 
-    uint256[12][12] internal P = [
+    uint256[12][12] P = [
         [
             0x19,
             0x78566230aa7cc5d0,

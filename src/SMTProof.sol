@@ -1,31 +1,30 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
 
-import {PoseidonHash} from "./test.sol";
+import {PoseidonHash} from "./Poseidon.sol";
 
 library SMTProof {
     struct NodeKey {
         uint256[4] parts;
     }
 
-    function verifyAndGetVal(NodeKey calldata stateRoot, bytes[] memory proof, NodeKey calldata key)
-        external
-        returns (bytes memory, bool)
-    {
+    function verifyAndGetVal(
+        PoseidonHash poseidon,
+        NodeKey calldata stateRoot,
+        bytes[] memory proof,
+        NodeKey calldata key
+    ) external view returns (bytes memory, bool) {
         require(proof.length > 0, "Proof cannot be empty");
 
         uint8[256] memory path = getPath(key);
         uint256 currentRoot = uint256(mergeUint64ToBytes32(stateRoot.parts));
 
         for (uint256 i; i < proof.length; ++i) {
-            bytes32 leftChild = bytesToBytes32(proof[i], 0);
-            bytes32 rightChild = bytesToBytes32(proof[i], 32);
-
-            uint256 leftChildNode = uint256(leftChild);
-            uint256 rightChildNode = uint256(rightChild);
+            uint256 leftChildNode = uint256(bytesToBytes32(proof[i], 0));
+            uint256 rightChildNode = uint256(bytesToBytes32(proof[i], 32));
 
             // Hash the two children along with the capacity
-            uint256[4] memory computedHash = hash(leftChildNode, rightChildNode, proof[i]);
+            uint256[4] memory computedHash = hash(poseidon, leftChildNode, rightChildNode, proof[i]);
 
             require(currentRoot == uint256(mergeUint64ToBytes32(computedHash)), "Root hash mismatch");
 
@@ -36,12 +35,12 @@ library SMTProof {
                     return ("", false); // Non-existent value
                 }
             } else {
-                if (joinKey(path, i, leftChild) == mergeUint64ToBytes32(key.parts)) {
+                if (joinKey(path, i, bytes32(leftChildNode)) == mergeUint64ToBytes32(key.parts)) {
                     // Value was found
                     // The last proof element holds the value
                     bytes memory value = proof[proof.length - 1];
 
-                    computedHash = hash(prepareValueForHashing(value), 0, bytes(""));
+                    computedHash = hash(poseidon, prepareValueForHashing(value), 0, bytes(""));
                     require(uint256(mergeUint64ToBytes32(computedHash)) == rightChildNode, "Final root hash mismatch");
                     return (value, true);
                 } else {
@@ -54,12 +53,13 @@ library SMTProof {
 
     // Utility Functions
 
-    function hash(uint256 leftChildNode, uint256 rightChildNode, bytes memory proof)
+    function hash(PoseidonHash poseidon, uint256 leftChildNode, uint256 rightChildNode, bytes memory proof)
         private
+        view
         returns (uint256[4] memory inputs)
     {
         uint256[] memory input = prepareInputs(leftChildNode, rightChildNode);
-        uint256[4] memory computedHash = (new PoseidonHash()).hashNToMNoPad(input, proof.length == 65);
+        uint256[4] memory computedHash = poseidon.hashNToMNoPad(input, proof.length == 65);
         return computedHash;
     }
 
