@@ -8,7 +8,6 @@ contract PoseidonHash {
     uint256 constant t = 12;
     uint256 constant nRoundsF = 8;
     uint256 constant nRoundsP = 22;
-    uint256 constant ZERO = 0;
 
     uint256[] C = [
         0xb585f766f2144405,
@@ -837,68 +836,76 @@ contract PoseidonHash {
     function permute(uint256[12] memory inputState, bool isLeaf) internal view returns (uint256[12] memory) {
         uint256[12] memory state;
         // Add constants to the input state
-        for (uint256 i = 0; i < 12; i++) {
+        for (uint256 i; i < 12; ++i) {
             state[i] = addmod(inputState[i], C[i], PRIME);
         }
         if (isLeaf) {
+            // update capacity
             state[8] = addmod(state[8], 1, PRIME);
         }
 
         // First half of full rounds
-        for (uint256 r = 0; r < nRoundsF / 2 - 1; r++) {
+        uint256 halfRounds = (nRoundsF / 2);
+        uint256 cIndex = t;
+        for (uint256 r = 1; r < halfRounds; ++r) {
             // Apply S-box
-            for (uint256 i = 0; i < 12; i++) {
+            for (uint256 i; i < 12; ++i) {
                 state[i] = pow7(state[i]);
             }
             // Add round constants
-            for (uint256 i = 0; i < 12; i++) {
-                state[i] = addmod(state[i], C[(r + 1) * t + i], PRIME);
+            for (uint256 i; i < 12; ++i) {
+                state[i] = addmod(state[i], C[cIndex + i], PRIME);
             }
             // Mix layer
             state = mix(state, M);
+            cIndex += t;
         }
 
         // Middle full round
-        for (uint256 i = 0; i < 12; i++) {
+        for (uint256 i; i < 12; ++i) {
             state[i] = pow7(state[i]);
         }
-        for (uint256 i = 0; i < 12; i++) {
-            state[i] = addmod(state[i], C[(nRoundsF / 2 - 1 + 1) * t + i], PRIME);
+        cIndex = halfRounds * t;
+        for (uint256 i; i < 12; ++i) {
+            state[i] = addmod(state[i], C[cIndex + i], PRIME);
         }
         state = mix(state, P);
 
         // Partial rounds
-
-        for (uint256 r = 0; r < nRoundsP; r++) {
+        cIndex = (halfRounds + 1) * t;
+        for (uint256 r; r < nRoundsP; ++r) {
             state[0] = pow7(state[0]);
-            state[0] = addmod(state[0], C[(nRoundsF / 2 + 1) * t + r], PRIME);
+            state[0] = addmod(state[0], C[cIndex + r], PRIME);
 
-            uint256 s0 = 0;
-            for (uint256 j = 0; j < t; j++) {
-                s0 = addmod(s0, mulmod(S[(t * 2 - 1) * r + j], state[j], PRIME), PRIME);
+            uint256 s0;
+            uint256 sIndex = (t * 2 - 1) * r;
+            for (uint256 j; j < t; ++j) {
+                s0 = addmod(s0, mulmod(S[sIndex + j], state[j], PRIME), PRIME);
             }
-            for (uint256 k = 1; k < t; k++) {
-                state[k] = addmod(state[k], mulmod(state[0], S[(t * 2 - 1) * r + t + k - 1], PRIME), PRIME);
+            sIndex += (t - 1);
+            for (uint256 k = 1; k < t; ++k) {
+                state[k] = addmod(state[k], mulmod(state[0], S[sIndex + k], PRIME), PRIME);
             }
             state[0] = s0;
         }
 
         // Second half of full rounds
-        for (uint256 r = 0; r < nRoundsF / 2 - 1; r++) {
+        for (uint256 r = 1; r < halfRounds; ++r) {
             // Apply S-box
-            for (uint256 i = 0; i < 12; i++) {
+            for (uint256 i; i < 12; ++i) {
                 state[i] = pow7(state[i]);
             }
             // Add round constants
-            for (uint256 i = 0; i < 12; i++) {
-                state[i] = addmod(state[i], C[(nRoundsF / 2 + 1) * t + nRoundsP + r * t + i], PRIME);
+            cIndex = (halfRounds + 1) * t + nRoundsP + (r - 1) * t;
+            for (uint256 i; i < 12; ++i) {
+                state[i] = addmod(state[i], C[cIndex + i], PRIME);
             }
             // Mix layer
             state = mix(state, M);
         }
 
         // Final full round
-        for (uint256 i = 0; i < 12; i++) {
+        for (uint256 i; i < 12; ++i) {
             state[i] = pow7(state[i]);
         }
         state = mix(state, M);
@@ -908,9 +915,9 @@ contract PoseidonHash {
 
     function mix(uint256[12] memory state, uint256[12][12] memory matrix) internal pure returns (uint256[12] memory) {
         uint256[12] memory newState;
-        for (uint256 i = 0; i < 12; i++) {
-            uint256 acc = 0;
-            for (uint256 j = 0; j < 12; j++) {
+        for (uint256 i; i < 12; ++i) {
+            uint256 acc;
+            for (uint256 j; j < 12; ++j) {
                 acc = addmod(acc, mulmod(matrix[j][i], state[j], PRIME), PRIME);
             }
             newState[i] = acc;
@@ -926,16 +933,15 @@ contract PoseidonHash {
         }
 
         uint256[12] memory state;
-        for (uint256 i = 0; i < 12; i++) {
-            state[i] = ZERO;
-        }
         uint256 nChunks = inputsLength / SPONGE_RATE;
 
         // Absorb the inputs in chunks
-        for (uint256 i = 0; i < nChunks; i++) {
-            for (uint256 j = 0; j < SPONGE_RATE; j++) {
-                state[j] = inputsBase[i * SPONGE_RATE + j];
+        uint256 rate;
+        for (uint256 i; i < nChunks; ++i) {
+            for (uint256 j; j < SPONGE_RATE; ++j) {
+                state[j] = inputsBase[rate + j];
             }
+            rate += SPONGE_RATE;
             state = permute(state, isLeaf);
         }
 
@@ -943,7 +949,7 @@ contract PoseidonHash {
         uint256 remaining = inputsLength - start;
 
         if (remaining > 0) {
-            for (uint256 i = 0; i < remaining; i++) {
+            for (uint256 i; i < remaining; ++i) {
                 state[i] = inputsBase[start + i];
             }
             state = permute(state, isLeaf);

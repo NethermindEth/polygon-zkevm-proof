@@ -133,12 +133,16 @@ library SMTProof {
         }
 
         // Process usedBits
+        uint256 r = 0;
         for (uint256 i = 0; i < index; ++i) {
-            // console.log("check", usedBits[i]);
             if (usedBits[i] == 1) {
-                accs[i % 4] = accs[i % 4] | (uint64(1) << n[i % 4]);
+                accs[r] = accs[r] | (uint64(1) << n[r]);
             }
-            n[i % 4]++;
+            ++n[r];
+            ++r;
+            if (r == 4) {
+                r = 0;
+            }
         }
 
         // Combine remainingKey and accs
