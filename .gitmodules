@@ -1,9 +1,3 @@
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
-[submodule "lib/poseidon-solidity"]
-	path = lib/poseidon-solidity
-	url = https://github.com/chancehudson/poseidon-solidity
-[submodule "lib/Solidity-goldilocks-poseidon"]
-	path = lib/Solidity-goldilocks-poseidon
-	url = https://github.com/qope/Solidity-goldilocks-poseidon
