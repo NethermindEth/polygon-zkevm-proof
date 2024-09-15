@@ -4,20 +4,16 @@ pragma solidity ^0.8.25;
 import {PoseidonHash} from "./Poseidon.sol";
 
 library SMTProof {
-    struct NodeKey {
-        uint256[4] parts;
-    }
-
     function verifyAndGetVal(
         PoseidonHash poseidon,
-        NodeKey calldata stateRoot,
+        uint256[4] calldata stateRoot,
         bytes[] memory proof,
-        NodeKey calldata key
+        uint256[4] calldata key
     ) external view returns (bytes memory, bool) {
         require(proof.length > 0, "Proof cannot be empty");
 
         uint8[256] memory path = getPath(key);
-        uint256 currentRoot = uint256(mergeUint64ToBytes32(stateRoot.parts));
+        uint256 currentRoot = uint256(mergeUint64ToBytes32(stateRoot));
 
         for (uint256 i; i < proof.length; ++i) {
             uint256 leftChildNode = uint256(bytesToBytes32(proof[i], 0));
@@ -35,7 +31,7 @@ library SMTProof {
                     return ("", false); // Non-existent value
                 }
             } else {
-                if (joinKey(path, i, bytes32(leftChildNode)) == mergeUint64ToBytes32(key.parts)) {
+                if (joinKey(path, i, bytes32(leftChildNode)) == mergeUint64ToBytes32(key)) {
                     // Value was found
                     // The last proof element holds the value
                     bytes memory value = proof[proof.length - 1];
@@ -97,8 +93,8 @@ library SMTProof {
     }
 
     // Get the path for a given key
-    function getPath(NodeKey memory key) private pure returns (uint8[256] memory path) {
-        uint256[4] memory auxKey = key.parts;
+    function getPath(uint256[4] memory key) private pure returns (uint8[256] memory path) {
+        uint256[4] memory auxKey = key;
         uint256 index;
 
         for (uint256 j; j < 64; ++j) {
