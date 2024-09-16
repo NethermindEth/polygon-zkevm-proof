@@ -1,21 +1,26 @@
-## Foundry
+# Sparse Merkle Tree Verification Library
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Overview
 
-Foundry consists of:
+This repository contains a Solidity library `SMTProof` for verifying the state of an account or storage slot given a Sparse Merkle Proof and a state root from a block. The library utilizes Poseidon hashing to ensure the integrity of the proof and verification process.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Library: `SMTProof`
 
-## Documentation
+The `SMTProof` library provides `verifyAndGetVal` function for verifying Sparse Merkle Tree (SMT) proofs and extracting values associated with given keys. It leverages the Poseidon hash function for cryptographic verification.
 
-https://book.getfoundry.sh/
+## Contract: `PoseidonHash`
+
+The PoseidonHash contract implements the Poseidon hash function, specifically designed for cryptographic applications using the Goldilocks field.
 
 ## Usage
 
+### Installation
+
+Ensure you have Forge installed to manage and compile the Solidity code. Follow the installation instructions provided in the Forge [documentation](https://book.getfoundry.sh/) if needed.
+
 ### Build
+
+To build the project, use the following command:
 
 ```shell
 $ forge build
@@ -23,44 +28,13 @@ $ forge build
 
 ### Test
 
+To run tests and verify functionality, use:
+
 ```shell
 $ forge test
 ```
 
-### Format
 
-```shell
-$ forge fmt
-```
 
-### Gas Snapshots
 
-```shell
-$ forge snapshot
-```
 
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
