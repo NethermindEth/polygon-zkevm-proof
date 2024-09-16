@@ -24,37 +24,22 @@ contract SMTProofTest is Test {
         vm.resumeGasMetering();
     }
 
-    function parseUint(string[] memory data) internal pure returns (uint256[4] memory output) {
+    function parseUintArray(uint256[] memory data) internal pure returns (uint256[4] memory output) {
         for (uint256 i; i < 4; i++) {
-            output[i] = vm.parseUint(data[i]);
-        }
-    }
-
-    function parseBytes(string[] memory data) internal pure returns (bytes[] memory output) {
-        output = new bytes[](data.length);
-        for (uint256 i; i < 4; i++) {
-            console.log(data[i]);
-            output[i] = bytes(data[i]);
+            output[i] = data[i];
         }
     }
 
     function readTestData(string memory name, uint256 index) public view returns (TestData memory) {
         return TestData({
-            root: parseUint(
-                abi.decode(
-                    vm.parseJson(goTests, string(abi.encodePacked(".", name, ".test[", vm.toString(index), "].root"))),
-                    (string[])
-                )
+            root: parseUintArray(
+                vm.parseJsonUintArray(goTests, string(abi.encodePacked(".", name, ".test[", vm.toString(index), "].root")))
             ),
-            proof: abi.decode(
-                vm.parseJson(goTests, string(abi.encodePacked(".", name, ".test[", vm.toString(index), "].proof"))),
-                (bytes[])
+            proof: vm.parseJsonBytesArray(
+                goTests, string(abi.encodePacked(".", name, ".test[", vm.toString(index), "].proof"))
             ),
-            key: parseUint(
-                abi.decode(
-                    vm.parseJson(goTests, string(abi.encodePacked(".", name, ".test[", vm.toString(index), "].key"))),
-                    (string[])
-                )
+            key: parseUintArray(
+                vm.parseJsonUintArray(goTests, string(abi.encodePacked(".", name, ".test[", vm.toString(index), "].key")))
             )
         });
     }
@@ -66,10 +51,28 @@ contract SMTProofTest is Test {
             try this.readTestData(name, i) returns (TestData memory test) {
                 testLogic(test, i);
             } catch Error(string memory reason) {
-                console.log(i, reason);
+                vm.assertTrue(
+                    false,
+                    string(
+                        abi.encodePacked(
+                            "Case #", vm.toString(i), " of test ", name, " failed to be read with reason: ", reason
+                        )
+                    )
+                );
             } catch (bytes memory lowLevelData) {
-                console.log(i);
-                console.logBytes(lowLevelData);
+                vm.assertTrue(
+                    false,
+                    string(
+                        abi.encodePacked(
+                            "Case #",
+                            vm.toString(i),
+                            " of test ",
+                            name,
+                            " failed to be read with reason: ",
+                            vm.toString(lowLevelData)
+                        )
+                    )
+                );
             }
         }
     }
@@ -118,7 +121,6 @@ contract SMTProofTest is Test {
 
     function test_ValueDoesntExistAndNonExistentProofIsCorrect() public {
         vm.pauseGasMetering(); // 1000 test cases
-        // 249, 558 & 746 not being parsed properly
         runTests("Value_doesn't_exist_and_non-existent_proof_is_correct", nonExistentValue);
     }
 
