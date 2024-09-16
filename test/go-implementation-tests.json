@@ -24319,7 +24319,7 @@
             }
         ]
     },
-    "lengt": 6,
+    "length": 6,
     "tests": [
         "Value_exists_and_proof_is_correct",
         "Value_doesn't_exist_and_non-existent_proof_is_correct",
